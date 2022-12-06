@@ -3,6 +3,9 @@ package openai
 const (
 	RESPONSE_FORMAT_URL    string = "url"
 	RESPONSE_FORMAT_BASE64 string = "base64_json"
+
+	MODEL_GPT_DAVINCI   string = "text-davinci-003"
+	MODEL_CODEX_DAVINCI string = "code-davinci-002"
 )
 
 type Client struct {
