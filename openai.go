@@ -11,6 +11,7 @@ import (
 
 var imageApiUrl = "https://api.openai.com/v1/images/generations"
 var completionApiUrl = "https://api.openai.com/v1/completions"
+var embeddingsApiUrl = "https://api.openai.com/v1/embeddings"
 
 func New(token string) *Client {
 	return &Client{Token: token}
@@ -73,6 +74,34 @@ func (c *Client) postCompletionRequest(r CompletionRequest) (*CompletionResponse
 	return &resp, nil
 }
 
+func (c *Client) postEmbeddingsRequest(r EmbeddingsRequest) (*EmbeddingsResponse, error) {
+	reqJson, _ := json.Marshal(r)
+	req, _ := http.NewRequest("POST", embeddingsApiUrl, strings.NewReader(string(reqJson)))
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.Token)
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		logger.Error().Msgf("Error posting to OpenAI: %v, %v", string(reqJson), err)
+		return nil, errors.New("error posting to openai")
+	}
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	logger.Debug().Msgf("Response from OpenAPI: %s", string(body))
+	resp := EmbeddingsResponse{}
+	err = json.Unmarshal(body, &resp)
+
+	if err != nil {
+		logger.Error().Msgf("Error requesting embeddings: %v", err)
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
 // GenerateImage sends a text prompt to OpenAI's image generation API.
 func (c *Client) GenerateImage(prompt string, responseFormat string, size string, n int) (*ImageResponse, error) {
 	req := ImageRequest{
@@ -95,4 +124,15 @@ func (c *Client) CompleteText(prompt, model string, temperature float32, maxToke
 	}
 
 	return c.postCompletionRequest(req)
+}
+
+// GetEmbeddings sends a list of input strings to OpenAI's embeddings API.
+func (c *Client) GetEmbeddings(model string, inputs []string, user string) (*EmbeddingsResponse, error) {
+	req := EmbeddingsRequest{
+		Model: model,
+		Inputs: inputs,
+		User: user,
+	}
+
+	return c.postEmbeddingsRequest(req)
 }
