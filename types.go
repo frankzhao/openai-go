@@ -51,3 +51,25 @@ type CompletionResponse struct {
 		TotalTokens      int `json:"total_tokens"`
 	} `json:"usage"`
 }
+
+// EmbeddingsRequest The Request message for the Embeddings API.
+type EmbeddingsRequest struct {
+	Model string `json:"model"`
+	Inputs []string `json:"inputs"`
+	User string `json:"user,omitempty"` 
+}
+
+// EmbeddingsResponse The Response message for the Embeddings API
+type EmbeddingsResponse struct {
+	Object  string `json:"object"`
+	Data []struct {
+		Object  string `json:"object"`
+		Embedding []float32 `json:"embedding"`
+		Index int `json:"index"`
+	}
+	Model   string `json:"model"`
+	Usage struct {
+		PromptTokens     int `json:"prompt_tokens"`
+		TotalTokens      int `json:"total_tokens"`
+	} `json:"usage"`
+}
